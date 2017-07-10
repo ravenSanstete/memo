@@ -8,22 +8,77 @@
 \begin{document}
 \maketitle
 \section{Context}
-A thorough study of the \textit{geometry} or the \textit{landscape} of the loss function of NN(respecially deep ones) is a critical step towards a further understanding of \textit{the blackbox}. Such a study is also of benefit for the construction of efficient optimization algorithms for deep learning. That is why this topic regains attention in the recent literature of machine learning.
+A thorough study of the \textit{geometry} or the \textit{landscape} of the loss function of NN(respecially deep ones) is a critical step towards a further understanding of \textit{the blackbox}.\cite{open2015} Such a study is also of benefit for the construction of efficient optimization algorithms for deep learning. That is why this topic regains attention in the recent literature of machine learning.
 \\
 In my latest memo\cite{memo}, I have discussed the possibility of automatically exploiting the one-order geometry of a given loss function for the convenience of applying geometric optimization methods in the context of machine learning. After that, I was aware of the over-generality of my proposed method, which forced me to firstly choose a family of toy loss functions to work with. And this memo is a preliminary context for my future work on my proposed method.   
 \\
 Actually, the discussion of geometric property of a NN is not a brand new topic. It may be traced back to the introduction of VC-entropy and VC-dimension in statistical learning theory\cite{vapnik2012the} and its application to the study of NN\cite{Anthony2009}. The main idea is to consider the seperating power of a given model on arbitrary distributions. However, these points are too theoretic with a loose relation(at least I have not found out the relation) to what I am studying about. Thus it would not be included in this memo. The ideal style of this memo in my mind should be, as most of the papers I refer to, rich in viewpoints and clear in notations, dealing with some fundamental aspects in machine learning but at the same time, close to problems and phenomena we have met in appplications and experiments.
 \section{Outline}
-Since this memo is a re-compiled version of half of my paper-based memos over the June, a relatively large number of papers will thus be discussed in this memo. Although the topic is unique, \textbf{the landscape of loss function of neural net}, both the techniques adopted and the viewpoints are however miscellaneous. An outline may be of help here.
+Since this memo is a re-compiled version of half of my paper-based memos over the June, a relatively large number of papers will thus be discussed in this memo. Although the topic is one, \textbf{the landscape of loss function of neural net}, both the techniques adopted and the viewpoints are however miscellaneous. An outline may be of help here.
 
 In Section 3, I will discuss the core formulation of \textit{natural gradient descent} introduced by \textit{Amari} in 1998, which is in essence a  \textit{steepest gradient descent} over the parameter manifold equipped with the corresponding \textit{Fisher metric}. The method has been applied to a simple neural net with one hidden layer in the original paper. Although we will no sooner find out that natural gradient descent is general \and theoretically solid but hard to be generalized to deep neural net in a computational efficient way, it is still be considered as a significant breakthrough of geometrical methods applied in NN.
 
-In Section 4, discussion would be concentrated on several specific constraints imposed on the search space that are recently reported\cite{Arjovsky2016} to be both efficient together with better performance of the same recurrent neural net. The underlying mechanism has not been revealed(since either the imposed \textit{orthogonality} or the \textit{unitarity} seems to come from nothing) and I am extremely curious about it. 
+In Section 4, discussion would be concentrated on several specific constraints imposed on the search space that are recently reported\cite{Arjovsky2016} to bring to the learning process more efficiency together with better performance of the same recurrent neural net. The underlying mechanism has not been revealed[ either the imposed \textit{orthogonality} or the \textit{unitarity} seems to come from nothing] and I am extremely curious about it. 
 
 In Section 5, a series of work\cite{Neyshabur201503}\cite{Neyshabur201506} on exploiting the \textit{symmmetry-invariance} in neural net will be discussed. It seemingly lies in the opposite polarity of \textit{natural gradient descent} since it tries to introduce a manifold structure via a quite subtle observation of a hiding equivalent relation in the paremter space. The method is at last crystallized into a so-called \textit{group regularization term}. This paper starts from some experimental observations but comes to a rather general solution, which impresses me a lot.
 
-In Section 6, we end the memo by a series of work on depicting the loss surface of neural net in a general setting.    
+In Section 6, we finalize this memo by scanning over a series of exciting work that endeavors to depict the loss surface of neural net in a general setting, i.e. arbitrary depth and arbitrary breath. Currently, techniques can be roughly divided to two branches, the first of which is by explicitly studying the analytic property of a NN model or by working out some equivalence with models in physics[\cite{Choro2015} shows its eqivalence with \textit{spin-glass model} in condensed matter physics. Although it seems like a bootstraping, it whatsoever shows the underlying complexity of how to depict loss surface of NN]. The other branch is experiment-based, depicting the high-dimensional loss surface of a given toy net via some\textit{dimension reduction} methods to some visualizable space or via perturbation around the local minima(or \textit{plateau}) in order to show the local landscape around the plateau. One of these papers will be summarized here\cite{Poggio2017}. Several exciting subsequent work, e.g. answering for what SGD has brought to deep learning\cite{Zhang2017} \and why an slightly over-parameterized neural net will generalize well\cite{Gamst2017}, would also be included. The papers in this section are mostly undergoing researches, inspiring and fascinating me a lot over the whole late June. 
 
+\section{Natural Gradient Descent\cite{Amari1998}\cite{Pascanu2013}}
+The discussion of natural gradient can be quite comprehensive if we start from the elements of differential geometry. In fact, natural gradient is a synonym of \textit{gradient} defined on a smooth manifold. It can be referred to in my latest memo\cite{memo}. As a quick review, the main idea here is to generalize the concept of \textit{gradient} in $\mathbb{R}^n$ to arbitraty smooth manifold equipped with some \textit{Riemmanian metric}[A generalized version of inner-product in $\mathbb{R}^n$]. A modifed inner-product induces a quite different language of \textit{'orthogonality'}. That is to say, given a matrix $\mathbf{G}$, we may define the \textbf{G}-orthogonality.
+$$
+x\perp_{G}{y} \text{ if } \langle{x},y\rangle_{G}\doteq{x}^T\mathbf{G}y=0
+$$
+
+As we all know, the steepest gradient descent is based on the orthogonality $\perp$ defined in the search space. With a modifed 'orthogonality' $\perp_{G}$, we may thus apply steepest gradient descent over a geometric structure determined uniquely by the matrices $\mathbf{G}_x$ defined at each point $x$ of the search space. We may list the gradient descent formula as follows[say $\mathit{l}$ the loss parameterized by $w$]
+$$
+	w_{t+1} = w_{t}-\eta_{t}\mathbf{G}_{w_t}^{-1}\nabla_{w_t}\mathit{l}
+$$
+, where $(\eta_{t})$ is a monotonicaly decreasing sequence of non-negative scalars.
+
+This roughly reviews the steepest gradient descent over Riemmanian manifold. Now we turn to natural gradient descent, which actually gives several specifications to the general gradient descent.
+
+First, it works with probabilistic models, or a parameterized  distribution family,
+
+$$
+	 \mathcal{S} \doteq{\{p_{w}(x):w\in\Theta\}}
+$$  
+
+For concreteness, we may formulate a deterministic neural net model into a indeterministic model by injecting some white noise,
+
+$$
+\tilde{h} \doteq \sigma(W_{i\to{h}}x)
+$$
+$$
+P_{W}(h|\tilde{h}) \doteq C\exp\{A(h-\tilde{h})^2\}
+$$
+
+Since the loss function can be similarly formulated as in the deterministic notation, we will omit here. How to define a proper Riemmanian metric over the underlying parameter manifold of the distribution family seems more essential.
+
+\textit{Fisher matrix} is a rather old notation from the statistics, while \textit{Amari} let it revive as a fundamental component in information geometry and thus natural gradient descent.
+
+Say $w\in\mathbb{R}^k$, a proper Riemmanian metric at each point $w$ should thus be in $\mathbb{R}^{k\times{k}}$. In Fisher's notation, it is defined as[again, with loss function $\mathit{l}$ parameterized with w] 
+$$
+	[G_{w}]_{ij} \doteq{\int}\partial_i\mathit{l}\partial_j\mathit{l}p_w(x)\mathbf{d}{x}
+$$  
+, where $\forall{i,j}\in[k]$, $\partial_{i}l\doteq\frac{\partial{l}}{\partial{w_i}}$
+
+It seems intractable, especially with large-scale problem. We may try to approximate the Fisher matrix at each point with sampling methods since closed form is hard to derive. Despite this bottleneck in practical usage, it was proved to converge in a large convergence rate[that is what the 'efficiency' actually means] with the following updating rule[\cite{Amari1998}, Sec. 4],
+$$
+	w_{t+1} = w_{t}-\frac{1}{t}\mathbf{G}_{w_t}^{-1}\nabla_{w_t}\mathit{l}
+$$
+
+For completeness, we cite a result called '\textit{Cram$\acute{e}$r-Rao Inequality}', which explains what \textit{Amari} means with '\textit{efficient}' in the title of the original paper. 
+$$
+	\mathbb{E}[(w_t-w^{*})(w_t-w^{*})^{T}]\geq\frac{1}{t}G_{w_t}^{-1}
+$$
+, where the $w^{*}$ is the global minima.
+
+Although this work has little to do with the following sections, it no doubt at the first time proposed imposing geometric structure over the search space and appling Riemmanian gradient descent to neural net learning. As for me, a side product of this paper is the implicit discovery of the non-trivial local structures of the loss function of neural net. If we could exploit the structures as much as possible, more interesting and efficient learning algorithms would have been constructed.
+
+\section{Those Mysteriously Good Constraints\cite{Arjovsky2016}}
+\section{Exploiting Invariance in NN}
+\section{'Scooping' the Loss Surface}
 
 
  
@@ -31,6 +86,7 @@ In Section 6, we end the memo by a series of work on depicting the loss surface 
 
 
 \begin{thebibliography}{9}
+\bibitem{open2015}Choromanska, Anna, Yann LeCun, and Gérard Ben Arous. \textit{Open problem: The landscape of the loss surfaces of multilayer networks.} Conference on Learning Theory. 2015.
 \bibitem{memo} Pan, \textit{Learning Natural Descent via Implicit Approximation of Underlying Parameter Manifold}
 \bibitem{vapnik2012the} Vapnik V. \textit{The Nature of Statistical Learning Theory}[J]. Technometrics, 2012, 38(4): 409-409.
 \bibitem{Anthony2009}Anthony, Martin, and Peter L. Bartlett. \textit{Neural network learning: Theoretical foundations.} cambridge university press, 2009.
@@ -38,5 +94,10 @@ In Section 6, we end the memo by a series of work on depicting the loss surface 
 \bibitem{Arjovsky2016}Arjovsky, Martin, Amar Shah, and Yoshua Bengio. \textit{Unitary evolution recurrent neural networks.} International Conference on Machine Learning. 2016.
 \bibitem{Neyshabur201503}Neyshabur, B., Tomioka, R., \and Srebro, N. (2015). Norm-Based Capacity Control in Neural Networks. Retrieved from http://arxiv.org/abs/1503.00036
 \bibitem{Neyshabur201506}Neyshabur, B., Salakhutdinov, R., \and Srebro, N. (2015). Path-SGD: Path-Normalized Optimization in Deep Neural Networks, 1–12. Retrieved from http://arxiv.org/abs/1506.02617
+\bibitem{Choro2015}Choromanska, Anna, et al. \textit{The loss surfaces of multilayer networks.} Artificial Intelligence and Statistics. 2015.
+\bibitem{Poggio2017}Poggio, Tomaso, and Qianli Liao. "Theory II: Landscape of the Empirical Risk in Deep Learning." arXiv preprint arXiv:1703.09833 (2017).
+\bibitem{Zhang2017}Zhang, Chiyuan, et al. Theory of Deep Learning III: Generalization Properties of SGD. Center for Brains, Minds and Machines (CBMM), 2017.
+\bibitem{Gamst2017}Gamst, Anthony Collins, and Alden Walker. "The energy landscape of a simple neural network." arXiv preprint arXiv:1706.07101 (2017).
+\bibitem{Pascanu2013}Pascanu R, Bengio Y. Revisiting Natural Gradient for Deep Networks[C]., 2013.
 \end{thebibliography}
 \end{document}
